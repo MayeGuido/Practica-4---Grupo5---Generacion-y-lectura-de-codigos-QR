@@ -1,5 +1,5 @@
 <?php
-require_once 'phpqrcode/qrlib.php'; // Incluye la librería
+require_once 'phpqrcode/qrlib.php';
 
 class QRGenerator {
     private $uploadDir = 'uploads/';
@@ -12,17 +12,15 @@ class QRGenerator {
 
     public function generate($text = null, $imageFile = null) {
         $data = $this->prepareData($text, $imageFile);
-        // Genera el QR en memoria y lo envía como JPG
-        ob_start(); // Inicia buffer de salida
-        QRcode::png($data, null, QR_ECLEVEL_L, 10); // Genera PNG en buffer
-        $pngData = ob_get_contents(); // Obtiene el PNG
-        ob_end_clean(); // Limpia buffer
+        ob_start();
+        QRcode::png($data, null, QR_ECLEVEL_L, 10);
+        $pngData = ob_get_contents();
+        ob_end_clean();
 
-        // Convierte PNG a JPG
         $image = imagecreatefromstring($pngData);
         header('Content-Type: image/jpeg');
-        imagejpeg($image); // Envía como JPG
-        imagedestroy($image); // Libera memoria
+        imagejpeg($image);
+        imagedestroy($image);
     }
 
     private function prepareData($text, $imageFile) {
@@ -31,20 +29,19 @@ class QRGenerator {
         } elseif ($imageFile && $imageFile['error'] === UPLOAD_ERR_OK) {
             return $this->uploadImage($imageFile);
         }
-        return 'https://example.com'; // Fallback
+        return 'https://example.com';
     }
 
     private function uploadImage($file) {
         $fileName = uniqid() . '_' . basename($file['name']);
         $filePath = $this->uploadDir . $fileName;
         if (move_uploaded_file($file['tmp_name'], $filePath)) {
-            return 'https://' . $_SERVER['HTTP_HOST'] . '/' . $filePath; // URL completa
+            return 'https://' . $_SERVER['HTTP_HOST'] . '/' . $filePath;
         }
         throw new Exception('Error al subir la imagen.');
     }
 }
 
-// Uso de la clase
 $generator = new QRGenerator();
 try {
     $generator->generate($_POST['qr_text'] ?? null, $_FILES['qr_image'] ?? null);
